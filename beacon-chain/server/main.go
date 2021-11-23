@@ -27,6 +27,7 @@ var (
 	allowedOrigins          = flag.String("corsdomain", "localhost:4242", "A comma separated list of CORS domains to allow")
 	enableDebugRPCEndpoints = flag.Bool("enable-debug-rpc-endpoints", false, "Enable debug rpc endpoints such as /eth/v1alpha1/beacon/state")
 	grpcMaxMsgSize          = flag.Int("grpc-max-msg-size", 1<<22, "Integer to define max recieve message call size")
+	clientTimeout           = flag.Int("api-timeout", 2, "Integer to define the HTTP client timeout in minutes")
 	httpModules             = flag.String(
 		"http-modules",
 		strings.Join([]string{flags.PrysmAPIModule, flags.EthAPIModule}, ","),
@@ -61,6 +62,7 @@ func main() {
 		fmt.Sprintf("%s:%d", *host, *port),
 	).WithAllowedOrigins(strings.Split(*allowedOrigins, ",")).
 		WithMaxCallRecvMsgSize(uint64(*grpcMaxMsgSize))
+	WithRequestTimeout(clientTimeout)
 	if flags.EnableHTTPEthAPI(*httpModules) {
 		gw.WithApiMiddleware(&apimiddleware.BeaconEndpointFactory{})
 	}

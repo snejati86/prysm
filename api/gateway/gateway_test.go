@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/prysmaticlabs/prysm/cmd"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -117,4 +118,21 @@ func TestGateway_NilHandler_NotFoundHandlerRegistered(t *testing.T) {
 	writer := httptest.NewRecorder()
 	g.router.ServeHTTP(writer, &http.Request{Method: "GET", Host: "localhost", URL: &url.URL{Path: "/foo"}})
 	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestGateway_WithRequestTimeout(t *testing.T) {
+	app := cli.App{}
+	set := flag.NewFlagSet("api-timeout", 0)
+	set.Int(cmd.ClientRequestTimeOut.Name, 20, "api-timeout")
+	ctx := cli.NewContext(&app, set, nil)
+	g := New(
+		ctx.Context,
+		[]*PbMux{},
+		func(handler http.Handler, writer http.ResponseWriter, request *http.Request) {
+
+		},
+		"",
+		"gatewayAddress",
+	)
+	assert.Equal(t, 20, g.requestTimeout)
 }

@@ -219,6 +219,13 @@ var (
 		Usage: "Integer to define max recieve message call size (default: 4194304 (for 4MB))",
 		Value: 1 << 22,
 	}
+
+	// ClientRequestTimeOut defines the client timeout for HTTP requests.
+	ClientRequestTimeOut = &cli.IntFlag{
+		Name:  "api-timeout",
+		Usage: "Integer to define the HTTP client timeout in minutes (default: 2)",
+		Value: 2,
+	}
 	// AcceptTosFlag specifies user acceptance of ToS for non-interactive environments.
 	AcceptTosFlag = &cli.BoolFlag{
 		Name:  "accept-terms-of-use",

@@ -12,8 +12,9 @@ import (
 //   - Ethereum consensus API requests can be handled by grpc-gateway correctly
 //   - gRPC responses can be returned as spec-compliant Ethereum consensus API responses
 type ApiProxyMiddleware struct {
-	GatewayAddress  string
-	EndpointCreator EndpointFactory
+	GatewayAddress       string
+	EndpointCreator      EndpointFactory
+	ClientRequestTimeout int
 }
 
 // EndpointFactory is responsible for creating new instances of Endpoint values.
@@ -112,7 +113,8 @@ func (m *ApiProxyMiddleware) handleApiPath(gatewayRouter *mux.Router, path strin
 			WriteError(w, errJson, nil)
 			return
 		}
-		grpcResp, errJson := ProxyRequest(req)
+		grpcResp, errJson :=
+			ProxyRequest(req, m.ClientRequestTimeout)
 		if errJson != nil {
 			WriteError(w, errJson, nil)
 			return

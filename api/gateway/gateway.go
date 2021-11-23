@@ -42,6 +42,7 @@ type Gateway struct {
 	pbHandlers                   []*PbMux
 	muxHandler                   MuxHandler
 	maxCallRecvMsgSize           uint64
+	requestTimeout               int
 	router                       *mux.Router
 	server                       *http.Server
 	cancel                       context.CancelFunc
@@ -95,6 +96,11 @@ func (g *Gateway) WithRemoteCert(cert string) *Gateway {
 // WithMaxCallRecvMsgSize allows specifying the maximum allowed gRPC message size.
 func (g *Gateway) WithMaxCallRecvMsgSize(size uint64) *Gateway {
 	g.maxCallRecvMsgSize = size
+	return g
+}
+
+func (g *Gateway) WithRequestTimeout(timeout int) *Gateway {
+	g.requestTimeout = timeout
 	return g
 }
 
@@ -173,7 +179,7 @@ func (g *Gateway) Status() error {
 // Stop the gateway with a graceful shutdown.
 func (g *Gateway) Stop() error {
 	if g.server != nil {
-		shutdownCtx, shutdownCancel := context.WithTimeout(g.ctx, 2*time.Second)
+		shutdownCtx, shutdownCancel := context.WithTimeout(g.ctx, time.Duration(g.requestTimeout)*time.Second)
 		defer shutdownCancel()
 		if err := g.server.Shutdown(shutdownCtx); err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
@@ -273,8 +279,9 @@ func (g *Gateway) dialUnix(ctx context.Context, addr string) (*grpc.ClientConn, 
 
 func (g *Gateway) registerApiMiddleware() {
 	proxy := &apimiddleware.ApiProxyMiddleware{
-		GatewayAddress:  g.gatewayAddr,
-		EndpointCreator: g.apiMiddlewareEndpointFactory,
+		GatewayAddress:       g.gatewayAddr,
+		EndpointCreator:      g.apiMiddlewareEndpointFactory,
+		ClientRequestTimeout: g.requestTimeout,
 	}
 	log.Info("Starting API middleware")
 	proxy.Run(g.router)

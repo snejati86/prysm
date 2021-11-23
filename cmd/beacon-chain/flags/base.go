@@ -217,4 +217,10 @@ var (
 		Usage: "Post merge, this address will receive the transaction fees produced by any blocks from this node. Default to junk whilst merge is in development state.",
 		Value: hex.EncodeToString([]byte("0x0000000000000000000000000000000000000001")),
 	}
+	// ClientRequestTimeOut Request timeout flag sets the timeout for HTTP requests.
+	ClientRequestTimeOut = &cli.IntFlag{
+		Name:  "api-timeout",
+		Usage: "Integer to define the client timeout in minutes (default: 2)",
+		Value: 2,
+	}
 )
